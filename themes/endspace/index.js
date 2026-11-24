@@ -25,6 +25,7 @@ import TitleBar from './components/TitleBar'
 import LoadingCover from './components/LoadingCover'
 import MobileNav from './components/MobileNav'
 import ArticleAdjacent from './components/ArticleAdjacent'
+import NoteTree from './components/NoteTree'
 import FloatingControls from './components/FloatingControls'
 import useViewportScale from './components/useViewportScale'
 import replaceEndspaceSearchResult from './components/searchHighlight'
@@ -225,6 +226,17 @@ const LayoutSlug = (props) => {
       ) : (
         post && (
           <div className="relative">
+            {props.isNoteDirectory ? (
+              <div id="article-wrapper">
+                <NoteTree root={props.noteDirectoryRoot} entries={props.noteDirectory || []} />
+              </div>
+            ) : (
+            <>
+            {props.noteDirectoryHref && (
+              <SmartLink href={props.noteDirectoryHref} className="inline-block mb-4 text-sm text-[var(--endspace-text-secondary)] hover:text-[var(--endspace-text-primary)]">
+                ← 返回 {props.noteDirectoryRoot} 笔记目录
+              </SmartLink>
+            )}
             {/* Post Metadata Header */}
             <PostMeta post={post} />
 
@@ -253,11 +265,13 @@ const LayoutSlug = (props) => {
             <div id="comments">
               <Comment frontMatter={post} />
             </div>
+            </>
+            )}
           </div>
         )
       )}
       {/* Only the slug route receives the live post and lock state after unlocking. */}
-      {post && <FloatingControls key={`${post.id}:${Boolean(lock)}`} {...props} toc={lock ? undefined : post.toc} />}
+      {post && !props.isNoteDirectory && <FloatingControls key={`${post.id}:${Boolean(lock)}`} {...props} toc={lock ? undefined : post.toc} />}
     </>
   )
 }
