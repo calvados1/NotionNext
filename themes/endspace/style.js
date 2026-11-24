@@ -426,8 +426,7 @@ export const Style = () => {
         color: var(--endspace-text-primary) !important;
       }
 
-      /* Headers - NieR: Automata Style Dynamic Shadow */
-      /* Requirement: Misaligned when not hovered, Merged when hovered */
+      /* Article headings - clean, sharp typography */
       #notion-article h1, #notion-article h2, #notion-article h3 {
         color: var(--endspace-text-primary);
         font-weight: 800;
@@ -435,28 +434,9 @@ export const Style = () => {
         margin-bottom: 1em;
         position: relative;
         padding-left: 1rem;
-        letter-spacing: 0.02em; /* Slightly wider spacing for the 'digital' look */
-        transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Snappy tech transition */
-
-        /* Default: Distinctly Misaligned / Interlaced Layers */
-        /* Layer 1: Cyan Ghost (Top Left) */
-        /* Layer 2: Red/Dark Ghost (Bottom Right) */
-        text-shadow:
-          -4px -2px 0 rgba(6, 182, 212, 0.5),
-          4px 2px 0 rgba(255, 50, 50, 0.3);
-
-        /* Subtle opacity drop to emphasize the 'hologram' feel when idle */
-        opacity: 0.85;
-      }
-
-      /* Hover: Merge / Snap to focus */
-      #notion-article h1:hover, #notion-article h2:hover, #notion-article h3:hover {
-        /* Shadows merge into the text */
-        text-shadow:
-          0 0 0 rgba(6, 182, 212, 0),
-          0 0 0 rgba(255, 50, 50, 0);
+        letter-spacing: 0.02em;
+        text-shadow: none;
         opacity: 1;
-        transform: translateX(2px); /* Slight physical shift on 'lock-on' */
       }
 
       #notion-article h1::before,
