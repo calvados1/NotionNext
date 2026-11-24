@@ -330,3 +330,8 @@ img {
   @keyframes l1 {
   0% {background-position: right}
 }
+
+/* Netlify badge visibility */
+iframe#nl-badge-frame {
+  display: none !important;
+}
