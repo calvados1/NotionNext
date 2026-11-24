@@ -1,94 +1,41 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { checkStrIsNotionId, getLastPartOfUrl } from '@/lib/utils'
-import { idToUuid } from 'notion-utils'
-import BLOG from './blog.config'
 
-/**
- * Clerk 身份验证中间件
- */
+// Personal-blog mode: authentication and membership routes are disabled.
+// Keep this edge middleware independent of Clerk and server-side utilities.
 export const config = {
-  // 这里设置白名单，防止静态资源被拦截
-  matcher: ['/((?!.*\\..*|_next|/sign-in|/auth).*)', '/', '/(api|trpc)(.*)']
+  matcher: ['/((?!_next/|.*\\.).*)', '/(api|trpc)(.*)']
 }
 
-// 限制登录访问的路由
-const isTenantRoute = createRouteMatcher([
-  '/user/organization-selector(.*)',
-  '/user/orgid/(.*)',
-  '/dashboard',
-  '/dashboard/(.*)'
-])
+export default async function middleware(req: NextRequest) {
+  const pathname = req.nextUrl.pathname
+  const route = pathname.replace(/^\/(?:[a-z]{2}(?:-[a-zA-Z]{2})?)(?=\/|$)/, '') || '/'
+  if (/^\/(?:dashboard|admin|user|sign-in|sign-up|auth|trpc)(?:\/|$)/i.test(route) ||
+      /^\/api\/(?:auth|user|admin|membership)(?:\/|$)/i.test(route)) {
+    return new NextResponse('Not Found', { status: 404 })
+  }
 
-// 限制权限访问的路由
-const isTenantAdminRoute = createRouteMatcher([
-  '/admin/(.*)/memberships',
-  '/admin/(.*)/domain'
-])
+  // Resolve legacy Notion UUID links only when the requested path is a UUID.
+  // Do not fetch redirect.json on every normal page request.
+  const lastPart = pathname.split('/').filter(Boolean).pop() || ''
+  const compact = lastPart.replace(/-/g, '')
+  if (!/^[a-f0-9]{32}$/i.test(compact)) return NextResponse.next()
 
-/**
- * 没有配置权限相关功能的返回
- * @param req
- * @param ev
- * @returns
- */
-// eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-const noAuthMiddleware = async (req: NextRequest, ev: any) => {
-  // 如果没有配置 Clerk 相关环境变量，返回一个默认响应或者继续处理请求
-  if (BLOG['UUID_REDIRECT']) {
-    let redirectJson: Record<string, string> = {}
-    try {
-      const response = await fetch(`${req.nextUrl.origin}/redirect.json`)
-      if (response.ok) {
-        redirectJson = (await response.json()) as Record<string, string>
+  const id = compact.toLowerCase().replace(
+    /^(.{8})(.{4})(.{4})(.{4})(.{12})$/, '$1-$2-$3-$4-$5'
+  )
+  try {
+    const response = await fetch(new URL('/redirect.json', req.url))
+    if (response.ok) {
+      const redirects = (await response.json()) as Record<string, string>
+      const target = redirects[id] || redirects[lastPart]
+      if (typeof target === 'string' && target) {
+        const url = req.nextUrl.clone()
+        url.pathname = '/' + target.replace(/^\/+/, '')
+        if (url.pathname !== pathname) return NextResponse.redirect(url, 308)
       }
-    } catch (err) {
-      console.error('Error fetching static file:', err)
     }
-    let lastPart = getLastPartOfUrl(req.nextUrl.pathname) as string
-    if (checkStrIsNotionId(lastPart)) {
-      lastPart = idToUuid(lastPart)
-    }
-    if (lastPart && redirectJson[lastPart]) {
-      const redirectToUrl = req.nextUrl.clone()
-      redirectToUrl.pathname = '/' + redirectJson[lastPart]
-      console.log(
-        `redirect from ${req.nextUrl.pathname} to ${redirectToUrl.pathname}`
-      )
-      return NextResponse.redirect(redirectToUrl, 308)
-    }
+  } catch (error) {
+    console.error('[blog middleware] UUID redirect lookup failed', error)
   }
   return NextResponse.next()
 }
-/**
- * 鉴权中间件
- */
-const authMiddleware = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-  ? clerkMiddleware((auth, req) => {
-      const { userId } = auth()
-      // 处理 /dashboard 路由的登录保护
-      if (isTenantRoute(req)) {
-        if (!userId) {
-          // 用户未登录，重定向到 /sign-in
-          const url = new URL('/sign-in', req.url)
-          url.searchParams.set('redirectTo', req.url) // 保存重定向目标
-          return NextResponse.redirect(url)
-        }
-      }
-
-      // 处理管理员相关权限保护
-      if (isTenantAdminRoute(req)) {
-        auth().protect(has => {
-          return (
-            has({ permission: 'org:sys_memberships:manage' }) ||
-            has({ permission: 'org:sys_domains_manage' })
-          )
-        })
-      }
-
-      // 默认继续处理请求
-      return NextResponse.next()
-    })
-  : noAuthMiddleware
-
-export default authMiddleware
