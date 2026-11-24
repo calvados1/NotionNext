@@ -9,7 +9,6 @@ import { useGlobal } from '@/lib/global'
 import SmartLink from '@/components/SmartLink'
 import { EndspacePlayer } from './EndspacePlayer'
 import EndspaceSearchButton from './EndspaceSearchButton'
-import NotionMenuIcon from './NotionMenuIcon'
 import {
   IconMenu2,
   IconX,
@@ -138,15 +137,12 @@ export const MobileNav = (props) => {
     }
   }, [isMenuOpen])
 
-  // Render icon component
-  const renderIcon = (item) => {
-    const icon = item.pageIcon || item.customIcon || ''
-    return (
-      <span className="inline-flex h-6 w-6 items-center justify-center">
-        <NotionMenuIcon icon={icon} />
-      </span>
-    )
-  }
+  // Match the desktop navigation's minimal dot
+  const renderIcon = (item) => (
+    <span className="inline-flex h-6 w-6 items-center justify-center">
+      <span aria-hidden="true" className="inline-block h-[9px] w-[9px] rounded-full" style={{ backgroundColor: activeTab === item.name ? 'var(--endspace-text-primary)' : 'var(--endspace-text-secondary)' }} />
+    </span>
+  )
 
   // Render social icon
   const renderSocialIcon = (key, svg, label) => {
