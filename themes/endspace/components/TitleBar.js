@@ -43,7 +43,7 @@ export const TitleBar = ({ post }) => {
       {!post && (
         <div className="absolute inset-0 flex items-center opacity-[0.15] pointer-events-none overflow-hidden">
           <div className="bg-watermark-scroll whitespace-nowrap leading-none">
-            <span className="text-[10rem] md:text-[14rem] font-black text-[var(--endspace-text-primary)] select-none">
+            <span className="block text-[8rem] md:text-[11rem] leading-none font-black text-[var(--endspace-text-primary)] select-none">
               {marqueeText}
               <span className="mx-[5vw] text-[var(--endspace-text-muted)]">&#x2022;</span>
               {marqueeText}
