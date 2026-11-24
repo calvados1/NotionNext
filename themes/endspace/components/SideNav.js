@@ -9,7 +9,6 @@ import { useGlobal } from '@/lib/global'
 import SmartLink from '@/components/SmartLink'
 import { EndspacePlayer } from './EndspacePlayer'
 import EndspaceSearchButton from './EndspaceSearchButton'
-import NotionMenuIcon from './NotionMenuIcon'
 import {
   IconBrandX,
   IconChevronDown
@@ -159,17 +158,14 @@ export const SideNav = (props) => {
     return () => window.removeEventListener('resize', handleResize)
   }, [activeTab])
 
-  // Render icon component
-  const renderIcon = (item, isActive) => {
-    const icon = item.pageIcon || item.customIcon || ''
-    return (
-      <span
-        className={`inline-flex h-5 w-5 items-center justify-center transition-all duration-300 ${isActive ? 'scale-110' : ''}`}
-      >
-        <NotionMenuIcon icon={icon} active={isActive} />
-      </span>
-    )
-  }
+  // Minimal dot for top-level navigation
+  const renderIcon = isActive => (
+    <span
+      aria-hidden="true"
+      className="inline-block h-[9px] w-[9px] rounded-full transition-colors duration-300"
+      style={{ backgroundColor: isActive ? 'var(--endspace-text-primary)' : 'var(--endspace-text-secondary)' }}
+    />
+  )
 
   // Render social icon
   const renderSocialIcon = (key, svg, label) => {
@@ -248,7 +244,7 @@ export const SideNav = (props) => {
             >
               {/* Icon Container */}
               <div className="endspace-menu-icon-wrap w-[5rem] flex-shrink-0 flex items-center justify-center z-10">
-                {renderIcon(item, isActive)}
+                {renderIcon(isActive)}
               </div>
 
               {/* Text Label (Reveal on Hover) */}
