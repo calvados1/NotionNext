@@ -61,7 +61,7 @@ function TreeNode({ node, depth, expanded, toggle }) {
   )
 }
 
-export default function NoteTree({ root, entries }) {
+export default function NoteTree({ root, title, entries }) {
   const nodes = useMemo(() => buildNoteTree(root, entries), [root, entries])
   const [expanded, setExpanded] = useState({})
   const toggle = key => setExpanded(prev => ({ ...prev, [key]: !prev[key] }))
@@ -69,7 +69,7 @@ export default function NoteTree({ root, entries }) {
     <section className="w-full text-[var(--endspace-text-primary)]">
       <div className="mb-6">
         <div className="text-xs text-[var(--endspace-text-muted)] mb-3">技术笔记 / {root}</div>
-        <h1 className="text-3xl md:text-4xl font-black mb-3">{root} 学习笔记</h1>
+        <h1 className="text-3xl md:text-4xl font-black mb-3">{title || `${root} 学习笔记`}</h1>
         <div className="flex justify-between text-xs text-[var(--endspace-text-muted)] tracking-wider"><span>KNOWLEDGE INDEX</span><span>{entries.length} ARTICLES</span></div>
       </div>
       <div className="border border-[var(--endspace-border-base)] bg-[var(--endspace-bg-base)] p-3 md:p-5">

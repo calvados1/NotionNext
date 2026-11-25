@@ -228,7 +228,7 @@ const LayoutSlug = (props) => {
           <div className="relative">
             {props.isNoteDirectory ? (
               <div id="article-wrapper">
-                <NoteTree root={props.noteDirectoryRoot} entries={props.noteDirectory || []} />
+                <NoteTree root={props.noteDirectoryRoot} title={post.title} entries={props.noteDirectory || []} />
               </div>
             ) : (
             <>
