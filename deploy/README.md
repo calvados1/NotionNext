@@ -93,3 +93,23 @@ Use port 3001 and project notionnext-green for green. Container logs rotate at 1
 To change public build settings (e.g. final NEXT_PUBLIC_LINK), update both build.env and runtime.env, then redeploy. The script includes a build.env checksum in the Docker build cache key. Runtime-only secret changes need a container recreation. Notion content edits and new posts require neither image rebuild nor code deployment.
 
 Acceptance includes a browser check on desktop and mobile, known note routes, expandable directory navigation, images/avatar, music controls, and a real Notion edit observed after automatic/explicit invalidation. A successful refresh API test does not by itself prove that a new Notion edit has propagated.
+
+
+## Production origin and HTTPS
+
+The production origin is `https://blog.yinnierqi.eu.org`. Both server environment files and the Notion CONFIG-TABLE `LINK` setting use this origin. Netlify remains available during migration acceptance.
+
+The blog's separate OpenResty virtual host is `/opt/1panel/www/conf.d/blog.yinnierqi.eu.org.conf`, loaded by the existing 1Panel OpenResty container. It forwards HTTPS to `127.0.0.1:3080` and redirects HTTP to HTTPS, except HTTP-01 certificate challenges. The pre-existing panel virtual host is unchanged. This configuration was added as a file; it is not a new website record in the 1Panel database. Back it up before later creating a same-named website through the panel UI.
+
+TLS certificates are issued by Let's Encrypt using the webroot `/opt/1panel/www/sites/blog.yinnierqi.eu.org/index`. Certbot's `certbot.timer` handles renewal. The deploy hook `/etc/letsencrypt/renewal-hooks/deploy/notionnext-openresty` copies renewed certificates into the container-mounted site's `ssl/` directory and validates/reloads OpenResty. Certbot owns this certificate's renewal; do not configure a competing renewal job for the same files.
+
+Admin checks:
+
+```bash
+curl -I https://blog.yinnierqi.eu.org/
+systemctl status certbot.timer
+certbot renew --dry-run --run-deploy-hooks
+sha256sum -c /opt/notionnext/backups/panel-site.sha256
+```
+
+Production runtime uses the existing memory cache (10 minutes), with file cache used during builds and Redis disabled. The 60-second ISR interval does not guarantee a Notion change appears within 60 seconds: nested data caches and access-driven regeneration can add delay. Use `/opt/notionnext/revalidate.py` for explicit full invalidation and batched regeneration without rebuilding the Docker image.
