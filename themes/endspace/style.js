@@ -402,16 +402,27 @@ export const Style = () => {
         color: #79c0ff !important;
       }
 
-      /* 行内代码 - 延续主题黄点缀 + 灰底 */
+      /* 行内代码 - 中性高对比样式，保留 Endspace 的克制工业感 */
       #theme-endspace #notion-article .notion-inline-code,
       #theme-endspace #notion-article code.notion-inline-code {
-        background: var(--endspace-bg-tertiary);
-        color: var(--endspace-accent-yellow) !important;
-        padding: 0.15em 0.4em;
-        border-radius: 3px;
+        background: #f1f3f5;
+        color: #374151 !important;
+        border: 1px solid #e2e6ea;
+        padding: 0.15em 0.42em;
+        border-radius: 4px;
         font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular,
           Menlo, monospace;
-        font-size: 0.9em;
+        font-size: 0.88em;
+        font-weight: 600;
+        line-height: 1.6;
+      }
+
+      /* 暗色模式下保持足够的文字与背景对比度 */
+      .dark #theme-endspace #notion-article .notion-inline-code,
+      .dark #theme-endspace #notion-article code.notion-inline-code {
+        background: #303038;
+        color: #f4f4f5 !important;
+        border-color: #52525b;
       }
 
 
