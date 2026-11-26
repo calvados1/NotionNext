@@ -1,0 +1,12 @@
+services:
+  gateway:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /opt/notionnext/gateway/conf:/etc/nginx:ro
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'

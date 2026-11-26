@@ -1,0 +1,8 @@
+#!/bin/bash
+set -euo pipefail
+# Install root-owned as /usr/local/sbin/notionnext-ssh-gate (0755).
+if [[ ${SSH_ORIGINAL_COMMAND:-} =~ ^deploy\ ([a-f0-9]{40})$ ]]; then
+  exec /usr/bin/sudo -n /opt/notionnext/deploy.sh "${BASH_REMATCH[1]}"
+fi
+echo 'Only deploy FULL_COMMIT_SHA is allowed.' >&2
+exit 126

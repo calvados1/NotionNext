@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 ARG NOTION_PAGE_ID
 ARG NEXT_PUBLIC_THEME
 
@@ -20,11 +21,17 @@ WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN yarn build
+ARG DEPLOY_CONFIG_REV
+RUN --mount=type=secret,id=build_env \
+    if [ -f /run/secrets/build_env ]; then set -a; . /run/secrets/build_env; set +a; fi; \
+    yarn build
 
 # 3. Production image, copy all the files and run next
 FROM base AS runner
 ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+ENV NEXT_TELEMETRY_DISABLED=1
 
 WORKDIR /app
 
